@@ -11,15 +11,14 @@
     <style>
         body {
             font-family: 'IBM Plex Sans Thai', sans-serif;
-            touch-action: none; /* ป้องกันการซูมหรือเลื่อนจอเมื่อลากวัตถุบนมือถือ */
         }
-        .base {
+        .template-base {
             width: 45px; height: 45px; font-size: 1.1rem;
         }
         @media (min-width: 640px) {
-            .base { width: 60px; height: 60px; font-size: 1.5rem; }
+            .template-base { width: 60px; height: 60px; font-size: 1.5rem; }
         }
-        .base, .template-base {
+        .template-base {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -28,40 +27,12 @@
             user-select: none;
             transition: all 0.2s ease-in-out;
         }
-        .base {
-            cursor: grab;
-            border: 2px solid rgba(0,0,0,0.2);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .base:active {
-            cursor: grabbing;
-            transform: scale(1.1);
-            box-shadow: 0 8px 12px rgba(0,0,0,0.2);
-        }
+
         .base-A { background-color: #84cc16; color: white; } /* สีเขียว */
         .base-T { background-color: #ef4444; color: white; } /* สีแดง */
         .base-C { background-color: #3b82f6; color: white; } /* สีน้ำเงิน */
         .base-G { background-color: #f59e0b; color: white; } /* สีส้ม */
-
-        .drop-zone, .template-base {
-             width: 45px; height: 45px; font-size: 1.1rem;
-        }
-        @media (min-width: 640px) {
-            .drop-zone, .template-base { width: 60px; height: 60px; font-size: 1.5rem; }
-        }
         
-        .drop-zone {
-            border: 3px dashed #9ca3af;
-            background-color: #f3f4f6;
-        }
-        .drop-zone.hovered {
-            background-color: #e5e7eb;
-            border-color: #6b7280;
-        }
-        .drop-zone.correct {
-            border: 3px solid #22c55e;
-            animation: pulse-green 0.5s;
-        }
         @keyframes pulse-green {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
@@ -91,7 +62,7 @@
             text-align: center; cursor: pointer; transition: all 0.2s; min-width: 40px;
         }
         .chromosome-pair:hover { background-color: #374151; }
-        .chromosome-pair.correct-selection {
+        .chromosome-pair.correct-selection, .diagnosis-btn.correct-selection {
             border-color: #22c55e; background-color: #16a34a; color: white;
             animation: pulse-green 0.5s;
         }
@@ -103,12 +74,6 @@
         .diagnosis-btn:hover:not(:disabled) { background-color: #4338ca; }
         .diagnosis-btn:disabled {
             background-color: #4b5563; cursor: not-allowed; opacity: 0.7;
-        }
-        .symptom-item {
-            transition: opacity 0.2s;
-        }
-        .syndrome-dropzone {
-            transition: all 0.2s;
         }
     </style>
 </head>
@@ -135,33 +100,30 @@
         <main>
             <!-- Mission Description -->
             <div id="mission-description" class="bg-gray-700 p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 text-center text-sm sm:text-lg">
-                ลากเบส (A, T, C, G) จากกล่องเครื่องมือด้านล่าง ไปจับคู่กับสาย DNA แม่แบบให้ถูกต้อง!
+                ...
             </div>
 
-            <!-- Level 1-4 Game Area -->
+            <!-- Game Area for Levels 1-4 -->
             <div id="game-area" class="space-y-4 sm:space-y-6">
-                <!-- DNA Template Strand -->
+                <!-- DNA Template Strand (Levels 1, 3, 4) -->
                 <div id="template-area" class="text-center">
-                    <h3 id="template-strand-title" class="text-md sm:text-lg font-semibold mb-2 text-gray-400">สาย DNA แม่แบบ (Template)</h3>
+                    <h3 id="template-strand-title" class="text-md sm:text-lg font-semibold mb-2 text-gray-400">...</h3>
                     <div id="template-strand" class="dna-strand"></div>
                 </div>
 
-                <!-- Player's Interaction Strand -->
+                <!-- Player's Interaction Area -->
                 <div id="player-area" class="text-center">
-                     <h3 id="player-strand-title" class="text-lg font-semibold mb-2 text-gray-400">สาย DNA ของคุณ (ลากเบสมาวางที่นี่)</h3>
+                     <h3 id="player-strand-title" class="text-lg font-semibold mb-2 text-gray-400">...</h3>
                     <div id="player-strand" class="dna-strand"></div>
+                     <div id="input-area" class="flex justify-center items-center gap-2 mt-4">
+                        <input type="text" id="dna-input" class="bg-gray-900 text-white font-mono text-xl text-center tracking-widest p-2 rounded-lg border-2 border-gray-500 w-full max-w-xs" placeholder="พิมพ์ลำดับเบส">
+                        <button id="submit-answer-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold p-2 rounded-lg text-lg">✔️</button>
+                    </div>
                 </div>
             </div>
             
             <!-- Level 2-3 Shared Content -->
-            <div id="level-2-content" class="hidden mt-4 sm:mt-6 flex flex-col md:flex-row items-center justify-around gap-4 sm:gap-6">
-                <div id="avatar-container" class="text-center">
-                    <h3 class="text-md sm:text-lg font-semibold mb-2 text-gray-400">ตัวละครของคุณ</h3>
-                    <div id="avatar" class="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 bg-gray-600 rounded-full flex items-center justify-center text-4xl sm:text-5xl md:text-6xl border-4 border-gray-500 transition-all duration-500">
-                        😐
-                    </div>
-                     <p id="trait-display" class="mt-2 text-sm sm:text-lg font-medium h-8"></p>
-                </div>
+            <div id="level-2-content" class="hidden mt-4 sm:mt-6 flex flex-col items-center justify-center gap-4 sm:gap-6">
                 <div id="gene-table-container">
                     <h3 class="text-md sm:text-lg font-semibold mb-2 text-gray-400 text-center">ตารางรหัสยีน</h3>
                     <table id="gene-table" class="bg-gray-700 rounded-lg overflow-hidden text-xs sm:text-sm md:text-base">
@@ -178,32 +140,16 @@
                 </div>
             </div>
 
-            <!-- Level 5 Matching Game Area -->
-            <div id="level-5-area" class="hidden">
-                <div class="flex flex-col md:flex-row justify-around gap-4 sm:gap-6">
-                    <!-- Symptoms Column (Draggable) -->
-                    <div id="symptoms-column" class="flex flex-col gap-3 sm:gap-4 w-full md:w-1/2">
-                        <!-- Symptoms will be generated by JS -->
-                    </div>
-                    <!-- Syndromes Column (Drop Zones) -->
-                    <div id="syndromes-column" class="flex flex-col gap-3 sm:gap-4 w-full md:w-1/2">
-                        <!-- Drop zones will be generated by JS -->
-                    </div>
+            <!-- Level 5 Area -->
+            <div id="level-5-area" class="hidden text-center">
+                <div id="symptom-display" class="bg-gray-700 p-4 rounded-lg mb-6 text-lg min-h-[6rem] flex items-center justify-center">
+                    <!-- Symptom text will appear here -->
                 </div>
-            </div>
-
-            <!-- Toolbox for levels 1-3 -->
-            <div id="toolbox-area" class="mt-4 sm:mt-8 pt-4 sm:pt-6 border-t-2 border-gray-600">
-                <h3 class="text-lg font-semibold mb-4 text-center text-gray-400">กล่องเครื่องมือ (Toolbox)</h3>
-                <div id="toolbox" class="flex justify-center items-center gap-3 sm:gap-4 flex-wrap">
-                    <div class="base base-A" draggable="true" data-base="A">A</div>
-                    <div class="base base-T" draggable="true" data-base="T">T</div>
-                    <div class="base base-C" draggable="true" data-base="C">C</div>
-                    <div class="base base-G" draggable="true" data-base="G">G</div>
+                <div id="syndrome-choices" class="flex flex-col sm:flex-row justify-center gap-4">
+                    <!-- Choice buttons will be generated here -->
                 </div>
             </div>
         </main>
-
     </div>
 
     <!-- Modal for messages -->
@@ -226,7 +172,7 @@
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 text-md sm:text-lg mb-6 bg-gray-900 p-3 rounded-lg">
                 <div><strong>👩‍🔬 นักสืบ:</strong> <span id="final-player-name"></span></div>
                 <div><strong>⏱️ เวลาที่ใช้:</strong> <span id="final-time"></span></div>
-                <div><strong>⭐ คะแนนที่ได้:</strong> <span id="final-score"></span></div>
+                <div><strong>⭐ คะแนนสุทธิ:</strong> <span id="final-score"></span></div>
             </div>
 
             <div class="text-left bg-gray-700 p-4 sm:p-6 rounded-lg">
@@ -241,93 +187,66 @@
                 <p class="mt-6 font-semibold">โลกของพันธุศาสตร์นั้นกว้างใหญ่และยังมีอะไรให้ค้นหาอีกมากมาย จงเรียนรู้ต่อไปนะ!</p>
             </div>
 
-            <button id="restart-button" class="mt-8 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-8 rounded-lg text-lg transition duration-300 transform hover:scale-105">
-                เล่นอีกครั้ง
-            </button>
         </div>
     </div>
 
 
     <script>
-        let startTime; // ประกาศตัวแปรสำหรับจับเวลา
-        let playerName = "นักสืบ"; // Default name
+        let startTime;
+        let playerName = "นักสืบ";
+        let gameScore = 0; // New score variable
+
         const gameConfig = {
             level: 1,
             levels: {
                 1: {
                     title: "ด่านที่ 1: ไขรหัส DNA พื้นฐาน",
-                    mission: "ลากเบส (A, T, C, G) จากกล่องเครื่องมือด้านล่าง ไปจับคู่กับสาย DNA แม่แบบให้ถูกต้อง!",
-                    sequence: [], // Sequence will be generated randomly
-                    completed: 0,
+                    mission: "จงพิมพ์ลำดับเบสคู่สมของสาย DNA แม่แบบด้านล่างให้ถูกต้อง",
+                    sequence: [],
                 },
                 2: {
                     title: "ด่านที่ 2: จากยีนสู่ลักษณะ (ท้าทาย)",
                     mission: "",
-                    targetTrait: 'ตาสีฟ้า', // This will be randomized
+                    targetTrait: 'ตาสีฟ้า',
                     genes: {
-                        'ตาสีฟ้า': { sequence: ['A', 'T', 'T', 'C', 'G', 'A'], emoji: '🔵', color: 'border-blue-400', face: '🙂' },
-                        'ตาสีเขียว': { sequence: ['G', 'C', 'C', 'A', 'T', 'G'], emoji: '🟢', color: 'border-green-400', face: '😊' },
-                        'ผมสีดำ': { sequence: ['C', 'G', 'A', 'T', 'A', 'T'], emoji: '⬛', color: 'border-gray-400', face: '😎'},
+                        'ตาสีฟ้า': { sequence: ['A', 'T', 'T', 'C', 'G', 'A'] },
+                        'ตาสีเขียว': { sequence: ['G', 'C', 'C', 'A', 'T', 'G'] },
+                        'ผมสีดำ': { sequence: ['C', 'G', 'A', 'T', 'A', 'T'] },
                     },
-                    completed: 0
                 },
                 3: {
                     title: "ด่านที่ 3: เผชิญหน้ามิวเทชัน! (ท้าทาย)",
                     mission: "",
-                    originalTrait: '', // Will be randomized
+                    originalTrait: '',
                     sequence: [],
-                    mutationIndex: -1,
-                    completed: 0
                 },
                 4: {
                     title: "ด่านที่ 4: นักสืบโครโมโซม",
                     mission: "อ่านอาการของคนไข้ แล้ววินิจฉัยว่าเป็นกลุ่มอาการใด",
-                    stage: 'guessing', // 'guessing' or 'confirming'
+                    stage: 'guessing',
                     currentCase: null,
                     unsolvedCases: [],
                     cases: {
-                        'กลุ่มอาการดาวน์': { 
-                            name: "กลุ่มอาการดาวน์ (Down Syndrome)", errorChromosome: 21, type: 'trisomy', 
-                            description: "มีโครโมโซมคู่ที่ 21 เกินมา 1 แท่ง",
-                            symptoms: "• สติปัญญาต่ำ\n• รูปร่างเตี้ย\n• ท้ายทอยแบน ตาเฉียงขึ้น\n• อาจมีโรคหัวใจพิการแต่กำเนิด"
-                        },
-                        'กลุ่มอาการคริดูชาต์': {
-                            name: "กลุ่มอาการคริดูชาต์ (Cri-du-chat Syndrome)", errorChromosome: 5, type: 'deletion',
-                            description: "แขนของโครโมโซมคู่ที่ 5 ข้างหนึ่งขาดหายไป",
-                            symptoms: "• สติปัญญาต่ำมาก\n• ศีรษะเล็ก ใบหน้ากลม\n• เสียงร้องแหลมเล็กคล้ายแมว"
-                        },
-                        'กลุ่มอาการเทอร์เนอร์': {
-                            name: "กลุ่มอาการเทอร์เนอร์ (Turner Syndrome)", errorChromosome: 'X', type: 'monosomy',
-                            description: "มีโครโมโซม X เพียงแท่งเดียว (XO)",
-                            symptoms: "• พบในเพศหญิง รูปร่างเตี้ย\n• คอมีพังผืดกางเป็นปีก\n• รังไข่ไม่เจริญ เป็นหมัน"
-                        }
+                        'กลุ่มอาการดาวน์': { name: "กลุ่มอาการดาวน์ (Down Syndrome)", errorChromosome: 21, description: "มีโครโมโซมคู่ที่ 21 เกินมา 1 แท่ง", symptoms: "• สติปัญญาต่ำ\n• รูปร่างเตี้ย\n• ท้ายทอยแบน ตาเฉียงขึ้น\n• อาจมีโรคหัวใจพิการแต่กำเนิด" },
+                        'กลุ่มอาการคริดูชาต์': { name: "กลุ่มอาการคริดูชาต์ (Cri-du-chat Syndrome)", errorChromosome: 5, description: "แขนของโครโมโซมคู่ที่ 5 ข้างหนึ่งขาดหายไป", symptoms: "• สติปัญญาต่ำมาก\n• ศีรษะเล็ก ใบหน้ากลม\n• เสียงร้องแหลมเล็กคล้ายแมว" },
+                        'กลุ่มอาการเทอร์เนอร์': { name: "กลุ่มอาการเทอร์เนอร์ (Turner Syndrome)", errorChromosome: 'X', description: "มีโครโมโซม X เพียงแท่งเดียว (XO)", symptoms: "• พบในเพศหญิง รูปร่างเตี้ย\n• คอมีพังผืดกางเป็นปีก\n• รังไข่ไม่เจริญ เป็นหมัน" }
                     },
                     chromosomeFound: false,
                 },
                  5: {
                     title: "ด่านที่ 5: นักสืบวินิจฉัยโรค",
-                    mission: "ลากอาการของคนไข้ทางซ้าย ไปวางบนกลุ่มอาการที่ถูกต้องทางขวา",
+                    mission: "อ่านลักษณะอาการ แล้วคลิกเลือกกลุ่มอาการที่ถูกต้อง",
                     completed: 0,
                     symptomPool: [],
-                    currentSetSize: 0,
+                    currentSymptom: null,
                     pairs: [
-                        { symptom: "เสียงร้องแหลมเล็กคล้ายแมว", syndrome: "กลุ่มอาการคริดูชาต์" },
-                        { symptom: "ท้ายทอยแบน ตาเฉียงขึ้น", syndrome: "กลุ่มอาการดาวน์" },
-                        { symptom: "คอมีพังผืดกางเป็นปีก (พบในเพศหญิง)", syndrome: "กลุ่มอาการเทอร์เนอร์" },
-                        { symptom: "รูปร่างเตี้ยและอาจมีโรคหัวใจ", syndrome: "กลุ่มอาการดาวน์" },
-                        { symptom: "ศีรษะเล็กและใบหน้ากลม", syndrome: "กลุ่มอาการคริดูชาต์" },
-                        { symptom: "เป็นหมันเพราะรังไข่ไม่เจริญ", syndrome: "กลุ่มอาการเทอร์เนอร์" },
-                        { symptom: "ลิ้นจุกปาก เส้นลายมือตัดขวาง", syndrome: "กลุ่มอาการดาวน์" },
-                        { symptom: "ปัญญาอ่อนรุนแรง", syndrome: "กลุ่มอาการคริดูชาต์" },
-                        { symptom: "พบในเพศหญิงเท่านั้น", syndrome: "กลุ่มอาการเทอร์เนอร์" },
-                        { symptom: "ดั้งจมูกแบน", syndrome: "กลุ่มอาการดาวน์" }
+                        { symptom: "เสียงร้องแหลมเล็กคล้ายแมว", syndrome: "กลุ่มอาการคริดูชาต์" }, { symptom: "ท้ายทอยแบน ตาเฉียงขึ้น", syndrome: "กลุ่มอาการดาวน์" }, { symptom: "คอมีพังผืดกางเป็นปีก (พบในเพศหญิง)", syndrome: "กลุ่มอาการเทอร์เนอร์" }, { symptom: "รูปร่างเตี้ยและอาจมีโรคหัวใจ", syndrome: "กลุ่มอาการดาวน์" }, { symptom: "ศีรษะเล็กและใบหน้ากลม", syndrome: "กลุ่มอาการคริดูชาต์" }, { symptom: "เป็นหมันเพราะรังไข่ไม่เจริญ", syndrome: "กลุ่มอาการเทอร์เนอร์" }, { symptom: "ลิ้นจุกปาก เส้นลายมือตัดขวาง", syndrome: "กลุ่มอาการดาวน์" }, { symptom: "ปัญญาอ่อนรุนแรง", syndrome: "กลุ่มอาการคริดูชาต์" }, { symptom: "พบในเพศหญิงเท่านั้น", syndrome: "กลุ่มอาการเทอร์เนอร์" }, { symptom: "ดั้งจมูกแบน", syndrome: "กลุ่มอาการดาวน์" }
                     ]
                 }
             },
             baseComplements: { 'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C' }
         };
 
-        // DOM Elements
         const levelTitleEl = document.getElementById('level-title');
         const missionDescriptionEl = document.getElementById('mission-description');
         const gameAreaEl = document.getElementById('game-area');
@@ -338,11 +257,9 @@
         const playerAreaEl = document.getElementById('player-area');
         const playerStrandTitleEl = document.getElementById('player-strand-title');
         const playerStrandEl = document.getElementById('player-strand');
-        const toolboxAreaEl = document.getElementById('toolbox-area');
         const level2ContentEl = document.getElementById('level-2-content');
-        const avatarEl = document.getElementById('avatar');
-        const traitDisplayEl = document.getElementById('trait-display');
         const geneTableBodyEl = document.querySelector('#gene-table tbody');
+        const inputAreaEl = document.getElementById('input-area');
         
         const modalEl = document.getElementById('modal');
         const modalContentEl = document.getElementById('modal-content');
@@ -355,11 +272,10 @@
             levelTitleEl.textContent = config.title;
             missionDescriptionEl.textContent = config.mission;
             
-            // Reset visibility for all areas first
             gameAreaEl.classList.add('hidden');
-            toolboxAreaEl.classList.add('hidden');
             level2ContentEl.classList.add('hidden');
             level5AreaEl.classList.add('hidden');
+            inputAreaEl.classList.add('hidden');
 
             if (level === 1) setupLevel1();
             else if (level === 2) setupLevel2();
@@ -368,7 +284,7 @@
                 const configLvl4 = gameConfig.levels[4];
                 if (configLvl4.unsolvedCases.length === 0) {
                     const caseKeys = Object.keys(configLvl4.cases);
-                     for (let i = caseKeys.length - 1; i > 0; i--) { // Shuffle
+                     for (let i = caseKeys.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
                         [caseKeys[i], caseKeys[j]] = [caseKeys[j], caseKeys[i]];
                     }
@@ -380,53 +296,46 @@
         
         function setupLevel1() {
             gameAreaEl.classList.remove('hidden');
-            toolboxAreaEl.classList.remove('hidden');
-            
-            const config = gameConfig.levels[1];
+            templateAreaEl.classList.remove('hidden');
+            playerAreaEl.classList.remove('hidden');
+            inputAreaEl.classList.remove('hidden');
+            playerStrandEl.classList.add('hidden');
 
-            // --- START: Randomize DNA sequence for Level 1 ---
+            const config = gameConfig.levels[1];
             const bases = ['A', 'T', 'C', 'G'];
-            let newSequence = [...bases]; // Start with one of each base
+            let newSequence = [...bases];
             const desiredLength = 6;
             
-            // Add random bases until the desired length is reached
             while (newSequence.length < desiredLength) {
-                const randomBase = bases[Math.floor(Math.random() * bases.length)];
-                newSequence.push(randomBase);
+                newSequence.push(bases[Math.floor(Math.random() * bases.length)]);
             }
-
-            // Shuffle the sequence to make it random (Fisher-Yates shuffle)
             for (let i = newSequence.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [newSequence[i], newSequence[j]] = [newSequence[j], newSequence[i]];
             }
-            config.sequence = newSequence; // Update the level config with the new sequence
-             config.completed = 0;
-            // --- END: Randomize DNA sequence ---
+            config.sequence = newSequence;
 
             templateStrandTitleEl.textContent = 'สาย DNA แม่แบบ (Template)';
-            playerStrandTitleEl.textContent = 'สาย DNA ของคุณ (ลากเบสมาวางที่นี่)';
+            playerStrandTitleEl.textContent = 'สาย DNA คู่สม (พิมพ์คำตอบ)';
             templateStrandEl.innerHTML = '';
-            playerStrandEl.innerHTML = '';
+
             config.sequence.forEach(base => {
                 const templateBase = document.createElement('div');
                 templateBase.className = `template-base base-${base}`;
                 templateBase.textContent = base;
                 templateStrandEl.appendChild(templateBase);
-
-                const dropZone = document.createElement('div');
-                dropZone.className = 'drop-zone';
-                dropZone.dataset.target = gameConfig.baseComplements[base];
-                playerStrandEl.appendChild(dropZone);
             });
-            addDragAndDropListeners();
+            
+            document.getElementById('submit-answer-btn').onclick = checkTextInputAnswer;
         }
         
         function setupLevel2() {
             gameAreaEl.classList.remove('hidden');
-            toolboxAreaEl.classList.remove('hidden');
+            playerAreaEl.classList.remove('hidden');
+            inputAreaEl.classList.remove('hidden');
             level2ContentEl.classList.remove('hidden');
             templateAreaEl.classList.add('hidden');
+            playerStrandEl.classList.add('hidden');
 
             const config = gameConfig.levels[2];
             const availableTraits = Object.keys(config.genes);
@@ -436,45 +345,34 @@
             config.mission = `ภารกิจ: สร้างสาย DNA คู่สม (Complementary) ของยีนสำหรับ '${config.targetTrait}' โดยดูรหัสจากตาราง`;
             missionDescriptionEl.textContent = config.mission;
             
-            updateAvatar('😐', 'ลักษณะไม่ปรากฏ', 'border-gray-500');
-            playerStrandTitleEl.textContent = `สร้างสาย DNA คู่สมของยีน '${config.targetTrait}' ที่นี่`;
+            playerStrandTitleEl.textContent = `พิมพ์สาย DNA คู่สมของยีน '${config.targetTrait}' ที่นี่`;
 
             geneTableBodyEl.innerHTML = '';
             for (const trait in config.genes) {
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-600';
-                row.innerHTML = `<td class="p-1 sm:p-2 md:p-3">${trait} ${config.genes[trait].emoji}</td><td class="p-1 sm:p-2 md:p-3 font-mono">${config.genes[trait].sequence.join('-')}</td>`;
+                row.innerHTML = `<td class="p-1 sm:p-2 md:p-3">${trait}</td><td class="p-1 sm:p-2 md:p-3 font-mono">${config.genes[trait].sequence.join('-')}</td>`;
                 geneTableBodyEl.appendChild(row);
             }
-            
-            const targetSequence = config.genes[config.targetTrait].sequence;
-            config.completed = 0;
-            playerStrandEl.innerHTML = '';
-            targetSequence.forEach(base => {
-                const dropZone = document.createElement('div');
-                dropZone.className = 'drop-zone';
-                dropZone.dataset.target = gameConfig.baseComplements[base];
-                playerStrandEl.appendChild(dropZone);
-            });
-            addDragAndDropListeners();
+            document.getElementById('submit-answer-btn').onclick = checkTextInputAnswer;
         }
         
         function setupLevel3() {
             gameAreaEl.classList.remove('hidden');
-            toolboxAreaEl.classList.remove('hidden');
+            playerAreaEl.classList.remove('hidden');
+            inputAreaEl.classList.remove('hidden');
             level2ContentEl.classList.remove('hidden');
             templateAreaEl.classList.remove('hidden');
+            playerStrandEl.classList.add('hidden');
 
             const level2Genes = gameConfig.levels[2].genes;
             const level3Config = gameConfig.levels[3];
-
             const availableTraits = Object.keys(level2Genes);
             const originalTrait = availableTraits[Math.floor(Math.random() * availableTraits.length)];
             level3Config.originalTrait = originalTrait;
 
             const originalSequence = [...level2Genes[originalTrait].sequence];
             const mutationIndex = Math.floor(Math.random() * originalSequence.length);
-            level3Config.mutationIndex = mutationIndex;
             const originalBase = originalSequence[mutationIndex];
             const possibleBases = ['A', 'T', 'C', 'G'].filter(b => b !== originalBase);
             const mutatedBase = possibleBases[Math.floor(Math.random() * possibleBases.length)];
@@ -485,51 +383,29 @@
             level3Config.mission = `🚨 เกิดมิวเทชัน! สาย DNA ด้านบนผิดไป 1 ตำแหน่ง หาให้เจอแล้วสร้างสาย DNA คู่สมที่ถูกต้องของยีน '${originalTrait}' ขึ้นมาใหม่`;
             missionDescriptionEl.textContent = level3Config.mission;
             templateStrandTitleEl.textContent = 'สาย DNA ที่กลายพันธุ์ (Mutated)';
-            playerStrandTitleEl.textContent = `สร้างสาย DNA คู่สมของยีน '${originalTrait}' ที่ถูกต้อง`;
-            
-            let mutatedTrait = 'ลักษณะผิดเพี้ยน';
-            let mutatedFace = '🤒';
-            let mutatedColor = 'border-yellow-500';
-
-            const mutatedSeqStr = mutatedSequence.join('');
-            for (const trait in level2Genes) {
-                if (level2Genes[trait].sequence.join('') === mutatedSeqStr) {
-                    mutatedTrait = trait;
-                    mutatedFace = level2Genes[trait].face;
-                    mutatedColor = level2Genes[trait].color;
-                    break;
-                }
-            }
-            updateAvatar(mutatedFace, `ลักษณะเปลี่ยนเป็น: ${mutatedTrait}`, mutatedColor);
+            playerStrandTitleEl.textContent = `พิมพ์สาย DNA คู่สมของยีน '${originalTrait}' ที่ถูกต้อง`;
             
             templateStrandEl.innerHTML = '';
-            mutatedSequence.forEach((base, index) => {
+            mutatedSequence.forEach((base) => {
                 const templateBase = document.createElement('div');
                 templateBase.className = `template-base base-${base}`;
                 templateBase.textContent = base;
                 templateStrandEl.appendChild(templateBase);
             });
             
-            level3Config.completed = 0;
-            playerStrandEl.innerHTML = '';
-            originalSequence.forEach(base => {
-                const dropZone = document.createElement('div');
-                dropZone.className = 'drop-zone';
-                dropZone.dataset.target = gameConfig.baseComplements[base];
-                playerStrandEl.appendChild(dropZone);
-            });
-            addDragAndDropListeners();
+            document.getElementById('submit-answer-btn').onclick = checkTextInputAnswer;
         }
 
         function setupLevel4() {
             gameAreaEl.classList.remove('hidden');
             templateAreaEl.classList.remove('hidden');
             playerAreaEl.classList.remove('hidden');
+            playerStrandEl.classList.remove('hidden');
+            inputAreaEl.classList.add('hidden');
 
             const config = gameConfig.levels[4];
-            
             if (config.unsolvedCases.length === 0) {
-                 setupLevel(5); // Transition to level 5 if all cases are solved
+                 setupLevel(5); 
                  return;
             }
 
@@ -542,7 +418,7 @@
             missionDescriptionEl.textContent = config.mission;
             
             templateStrandEl.innerHTML = '';
-            templateStrandEl.className = 'dna-strand';
+            templateStrandEl.className = 'dna-strand justify-center';
             const symptomsEl = document.createElement('div');
             symptomsEl.className = 'bg-gray-700 p-4 rounded-lg text-left whitespace-pre-line max-w-md';
             symptomsEl.textContent = config.currentCase.symptoms;
@@ -564,94 +440,97 @@
         }
         
         function setupLevel5() {
+            gameAreaEl.classList.add('hidden');
             level5AreaEl.classList.remove('hidden');
+
             const config = gameConfig.levels[5];
             missionDescriptionEl.textContent = config.mission;
             
             if (config.symptomPool.length === 0) {
                  config.symptomPool = [...config.pairs].sort(() => Math.random() - 0.5);
             }
-            
-            displayNextSymptomSet();
+            config.completed = 0;
+            displayNextSymptom();
         }
         
-        function displayNextSymptomSet() {
+        function displayNextSymptom() {
             const config = gameConfig.levels[5];
-            const symptomsColumn = document.getElementById('symptoms-column');
-            const syndromesColumn = document.getElementById('syndromes-column');
-            symptomsColumn.innerHTML = '';
-            syndromesColumn.innerHTML = '';
-
-            const currentSymptoms = config.symptomPool.splice(0, 5);
-            if (currentSymptoms.length === 0) {
-                showFinalScreen();
+            const symptomDisplay = document.getElementById('symptom-display');
+            const syndromeChoices = document.getElementById('syndrome-choices');
+            
+            if (config.completed >= config.pairs.length) {
+                showModal('ภารกิจสำเร็จ!', 'คุณวินิจฉัยได้ถูกต้องทั้งหมด! สุดยอดนักสืบพันธุกรรม!', 'ดูบทสรุปและคะแนน', showFinalScreen);
                 return;
             }
 
-            config.currentSetSize = currentSymptoms.length;
-            config.completed = 0;
+            config.currentSymptom = config.symptomPool[config.completed];
+            symptomDisplay.textContent = config.currentSymptom.symptom;
 
-            currentSymptoms.forEach(pair => {
-                const symptomEl = document.createElement('div');
-                symptomEl.className = 'symptom-item bg-gray-700 p-3 md:p-4 rounded-lg cursor-grab text-sm md:text-base';
-                symptomEl.textContent = pair.symptom;
-                symptomEl.draggable = true;
-                symptomEl.dataset.syndrome = pair.syndrome;
-                symptomEl.addEventListener('dragstart', e => {
-                    e.dataTransfer.setData('text/plain', e.target.dataset.syndrome);
-                    e.dataTransfer.setData('text/symptom', e.target.textContent);
-                    e.target.classList.add('opacity-50');
-                });
-                symptomEl.addEventListener('dragend', e => e.target.classList.remove('opacity-50'));
-                symptomEl.addEventListener('contextmenu', e => e.preventDefault()); // Prevent context menu on touch
-                symptomsColumn.appendChild(symptomEl);
-            });
-            
-             Object.keys(gameConfig.levels[4].cases).forEach(syndrome => {
-                const syndromeEl = document.createElement('div');
-                syndromeEl.className = 'syndrome-dropzone bg-gray-900 p-3 md:p-4 rounded-lg border-2 border-dashed border-gray-500 flex flex-col gap-2 min-h-[100px] md:min-h-[120px]';
-                syndromeEl.dataset.syndrome = syndrome;
-                syndromeEl.innerHTML = `<h4 class="font-bold text-indigo-400 mb-2 pointer-events-none">${syndrome}</h4>`;
-
-                syndromeEl.addEventListener('dragover', e => e.preventDefault());
-                syndromeEl.addEventListener('dragenter', e => e.currentTarget.classList.add('bg-gray-700', 'border-indigo-400'));
-                syndromeEl.addEventListener('dragleave', e => e.currentTarget.classList.remove('bg-gray-700', 'border-indigo-400'));
-                syndromeEl.addEventListener('drop', handleSymptomDrop);
-                
-                syndromesColumn.appendChild(syndromeEl);
+            syndromeChoices.innerHTML = '';
+            Object.keys(gameConfig.levels[4].cases).forEach(syndrome => {
+                const btn = document.createElement('button');
+                btn.className = 'diagnosis-btn';
+                btn.textContent = syndrome;
+                btn.dataset.syndrome = syndrome;
+                btn.onclick = handleSyndromeChoice;
+                syndromeChoices.appendChild(btn);
             });
         }
-
-
-        function handleSymptomDrop(e) {
-            e.preventDefault();
-            const dropZone = e.currentTarget;
-            const droppedSyndrome = e.dataTransfer.getData('text/plain');
-            const droppedSymptomText = e.dataTransfer.getData('text/symptom');
-            const targetSyndrome = dropZone.dataset.syndrome;
+        
+        function handleSyndromeChoice(e) {
+            const config = gameConfig.levels[5];
+            const chosenSyndrome = e.target.dataset.syndrome;
             
-            dropZone.classList.remove('bg-gray-700', 'border-indigo-400');
+            document.querySelectorAll('#syndrome-choices .diagnosis-btn').forEach(btn => btn.disabled = true);
 
-            const originalSymptomEl = Array.from(document.querySelectorAll('.symptom-item')).find(el => el.textContent === droppedSymptomText);
-
-            if (droppedSyndrome === targetSyndrome) {
-                if (originalSymptomEl) originalSymptomEl.remove();
-
-                const droppedItem = document.createElement('div');
-                droppedItem.className = 'bg-green-800/80 p-2 rounded w-full text-center text-xs md:text-sm';
-                droppedItem.textContent = droppedSymptomText;
-                dropZone.appendChild(droppedItem);
-                
-                gameConfig.levels[5].completed++;
-                checkCompletion();
+            if (chosenSyndrome === config.currentSymptom.syndrome) {
+                gameScore += 2;
+                e.target.classList.add('correct-selection');
+                config.completed++;
+                levelTitleEl.textContent = `${config.title} (${config.completed}/${config.pairs.length})`;
+                setTimeout(displayNextSymptom, 1000);
             } else {
-                 if (originalSymptomEl) {
-                    originalSymptomEl.classList.add('shake');
-                    setTimeout(() => originalSymptomEl.classList.remove('shake'), 300);
-                 }
+                gameScore -= 1;
+                e.target.classList.add('shake');
+                setTimeout(() => {
+                    e.target.classList.remove('shake');
+                     document.querySelectorAll('#syndrome-choices .diagnosis-btn').forEach(btn => btn.disabled = false);
+                }, 500);
             }
         }
 
+        function checkTextInputAnswer() {
+            const level = gameConfig.level;
+            const config = gameConfig.levels[level];
+            const inputEl = document.getElementById('dna-input');
+            const userInput = inputEl.value.trim().toUpperCase().replace(/[^ATCG]/g, '');
+
+            let correctAnswer = '';
+            if (level === 1) {
+                correctAnswer = config.sequence.map(base => gameConfig.baseComplements[base]).join('');
+            } else if (level === 2) {
+                correctAnswer = config.genes[config.targetTrait].sequence.map(base => gameConfig.baseComplements[base]).join('');
+            } else if (level === 3) {
+                const originalSequence = gameConfig.levels[2].genes[config.originalTrait].sequence;
+                correctAnswer = originalSequence.map(base => gameConfig.baseComplements[base]).join('');
+            }
+
+            if (userInput === correctAnswer) {
+                gameScore += 2;
+                inputEl.value = '';
+                if (level === 1) {
+                    showModal('ยอดเยี่ยม!', 'คุณสร้างสาย DNA ได้สมบูรณ์แล้ว!', 'ไปด่านที่ 2', () => { gameConfig.level = 2; setupLevel(2); });
+                } else if (level === 2) {
+                    showModal('สุดยอดมาก!', `คุณสร้างยีนสำหรับ '${config.targetTrait}' สำเร็จ!`, 'ไปด่านที่ 3', () => { gameConfig.level = 3; setupLevel(3); });
+                } else if (level === 3) {
+                    showModal('แก้ไขสำเร็จ!', 'คุณซ่อมแซมรหัส DNA กลับมาสมบูรณ์ได้!', 'ไปด่านที่ 4', () => { gameConfig.level = 4; setupLevel(4); });
+                }
+            } else {
+                gameScore -= 1;
+                inputEl.classList.add('shake');
+                setTimeout(() => inputEl.classList.remove('shake'), 300);
+            }
+        }
 
         function createChromosomePair(num, caseData) {
             const pair = document.createElement('div');
@@ -673,6 +552,7 @@
             const currentCase = config.currentCase;
 
             if (selectedSyndrome === currentCase.name.split(' (')[0]) {
+                gameScore += 2;
                 config.stage = 'confirming';
                 missionDescriptionEl.textContent = "ถูกต้อง! ทีนี้จงตรวจสอบ Karyotype และคลิกเลือกคู่โครโมโซมที่ผิดปกติเพื่อยืนยัน";
 
@@ -689,6 +569,7 @@
                 templateStrandEl.appendChild(createChromosomePair('Y', currentCase));
 
             } else {
+                gameScore -= 1;
                 clickedBtn.classList.add('shake');
                 setTimeout(() => clickedBtn.classList.remove('shake'), 300);
             }
@@ -700,6 +581,7 @@
             
             const clickedPair = e.currentTarget;
             if (clickedPair.dataset.correct === 'true') {
+                gameScore += 2;
                 config.chromosomeFound = true;
                 clickedPair.classList.add('correct-selection');
                 missionDescriptionEl.textContent = "ยืนยันสำเร็จ! คุณคือนักสืบพันธุกรรมตัวจริง";
@@ -718,86 +600,12 @@
                 }, 1200);
 
             } else {
+                gameScore -= 1;
                 clickedPair.classList.add('shake');
                 setTimeout(() => clickedPair.classList.remove('shake'), 300);
             }
         }
-
-
-        function updateAvatar(face, traitText, borderColorClass) {
-            avatarEl.textContent = face;
-            traitDisplayEl.textContent = traitText;
-            avatarEl.className = avatarEl.className.replace(/border-[\w-]+/, borderColorClass);
-        }
-
-        function addDragAndDropListeners() {
-            document.querySelectorAll('#toolbox .base').forEach(base => {
-                base.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', e.target.dataset.base));
-                base.addEventListener('contextmenu', e => e.preventDefault()); // Prevent context menu on touch
-            });
-            playerStrandEl.querySelectorAll('.drop-zone').forEach(zone => {
-                zone.addEventListener('dragover', e => e.preventDefault());
-                zone.addEventListener('dragenter', e => { if (!e.target.dataset.filled) e.target.classList.add('hovered'); });
-                zone.addEventListener('dragleave', e => e.target.classList.remove('hovered'));
-                zone.addEventListener('drop', drop);
-            });
-        }
         
-        function drop(e) {
-            e.preventDefault();
-            const zone = e.currentTarget;
-            if (zone.dataset.filled) return;
-            
-            zone.classList.remove('hovered');
-            const droppedBase = e.dataTransfer.getData('text/plain');
-            const targetBase = zone.dataset.target;
-
-            if (droppedBase === targetBase) {
-                zone.className = `drop-zone correct base-${droppedBase}`;
-                zone.textContent = droppedBase;
-                zone.dataset.filled = 'true';
-                gameConfig.levels[gameConfig.level].completed++;
-                checkCompletion();
-            } else {
-                zone.classList.add('shake');
-                setTimeout(() => zone.classList.remove('shake'), 300);
-            }
-        }
-        
-        function checkCompletion() {
-            if (gameConfig.level <= 3) {
-                const config = gameConfig.levels[gameConfig.level];
-                let total;
-                if (gameConfig.level === 1) total = config.sequence.length;
-                else if (gameConfig.level === 2) total = config.genes[config.targetTrait].sequence.length;
-                else if (gameConfig.level === 3) total = gameConfig.levels[2].genes[config.originalTrait].sequence.length;
-
-                if (config.completed === total) {
-                    if (gameConfig.level === 1) {
-                        showModal('ยอดเยี่ยม!', 'คุณสร้างสาย DNA ได้สมบูรณ์แล้ว! พร้อมสำหรับด่านต่อไปรึยัง?', 'ไปด่านที่ 2', () => { gameConfig.level = 2; setupLevel(2); });
-                    } else if (gameConfig.level === 2) {
-                        const traitInfo = config.genes[config.targetTrait];
-                        updateAvatar(traitInfo.face, `สำเร็จ: ${config.targetTrait}`, traitInfo.color);
-                        showModal('สุดยอดมาก!', `คุณสร้างยีนสำหรับ '${config.targetTrait}' สำเร็จ! แต่ระวัง...อาจมีบางอย่างผิดพลาดได้เสมอ...`, 'ไปด่านที่ 3', () => { gameConfig.level = 3; setupLevel(3); });
-                    } else if (gameConfig.level === 3) {
-                        const originalTrait = config.originalTrait;
-                        const traitInfo = gameConfig.levels[2].genes[originalTrait];
-                        updateAvatar(traitInfo.face, `แก้ไขสำเร็จ: ${originalTrait}`, traitInfo.color);
-                        showModal('แก้ไขสำเร็จ!', 'คุณซ่อมแซมรหัส DNA กลับมาสมบูรณ์ได้! ไปต่อด่านต่อไปกันเลย', 'ไปด่านที่ 4', () => { gameConfig.level = 4; setupLevel(4); });
-                    }
-                }
-            } else if (gameConfig.level === 5) {
-                const config = gameConfig.levels[5];
-                if (config.completed === config.currentSetSize) {
-                    if (config.symptomPool.length > 0) {
-                        showModal('ยอดเยี่ยม!', 'คุณผ่านชุดแรกแล้ว! มาต่อกันอีกชุดเลย!', 'ไปต่อชุดที่ 2', displayNextSymptomSet);
-                    } else {
-                        showModal('ภารกิจสำเร็จ!', 'คุณจับคู่ได้ถูกต้องทั้งหมด! สุดยอดนักสืบพันธุกรรม!', 'ดูบทสรุปและคะแนน', showFinalScreen);
-                    }
-                }
-            }
-        }
-
         function showModal(title, message, buttonText, callback) {
             modalTitleEl.textContent = title;
             modalMessageEl.textContent = message;
@@ -821,26 +629,35 @@
 
         function showFinalScreen() {
             const endTime = new Date();
-            const timeDiff = endTime - startTime; // in milliseconds
+            const timeDiff = endTime - startTime;
             const minutes = Math.floor(timeDiff / 60000);
             const seconds = Math.floor((timeDiff % 60000) / 1000);
 
-            let score = 0;
+            let timeScore = 0;
             const totalMinutes = timeDiff / 60000;
-            if (totalMinutes < 2) score = 5;
-            else if (totalMinutes <= 5) score = 4;
-            else if (totalMinutes <= 8) score = 3;
-            else if (totalMinutes <= 10) score = 2;
-            else score = 1;
+            if (totalMinutes < 2) timeScore = 5;
+            else if (totalMinutes <= 5) timeScore = 4;
+            else if (totalMinutes <= 8) timeScore = 3;
+            else if (totalMinutes <= 10) timeScore = 2;
+            else timeScore = 1;
+
+            const maxQuestionScore = (2 * 3) + (Object.keys(gameConfig.levels[4].cases).length * 4) + (gameConfig.levels[5].pairs.length * 2);
+            const maxTimeScore = 5;
+            const maxTotalPossibleScore = maxQuestionScore + maxTimeScore;
+            
+            const rawTotalScore = gameScore + timeScore;
+            
+            let finalScore = (rawTotalScore / maxTotalPossibleScore) * 10;
+            finalScore = Math.max(0, finalScore);
+            finalScore = Math.min(10, finalScore);
 
             document.getElementById('final-player-name').textContent = playerName;
             document.getElementById('final-time').textContent = `${minutes} นาที ${seconds.toString().padStart(2, '0')} วินาที`;
-            document.getElementById('final-score').textContent = `${score} / 5 คะแนน`;
+            document.getElementById('final-score').textContent = `${finalScore.toFixed(1)} / 10 คะแนน`;
             
             const finalScreenEl = document.getElementById('final-screen');
             const finalContentEl = document.getElementById('final-content');
-            const restartButtonEl = document.getElementById('restart-button');
-
+            
             document.getElementById('game-container').classList.add('hidden');
             modalEl.classList.add('hidden');
 
@@ -849,12 +666,6 @@
                 finalContentEl.classList.remove('scale-95', 'opacity-0');
                 finalContentEl.classList.add('scale-100', 'opacity-100');
             }, 10);
-
-            restartButtonEl.onclick = () => {
-                restartButtonEl.disabled = true;
-                restartButtonEl.textContent = "กำลังโหลดใหม่...";
-                location.reload();
-            };
         }
 
         window.onload = () => {
